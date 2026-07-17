@@ -1,0 +1,27 @@
+dependencies:
+- name: fcrepo
+  repository: oci://ghcr.io/samvera-labs/charts
+  version: 2.0.2
+- name: memcached
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 6.6.0
+- name: minio
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 12.8.0
+- name: postgresql
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 12.9.0
+- name: redis
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 17.16.0
+- name: solr
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 8.0.0
+- name: nginx
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 15.2.0
+- name: fits
+  repository: https://samvera-labs.github.io/fits-charts
+  version: 0.2.0
+digest: sha256:38f8c0ca005e6f5432fcd29eb09a414d1a32286d368ccb9c0a39e7ae2fabe941
+generated: "2025-09-04T05:39:24.30974742Z"
