@@ -254,7 +254,8 @@ fcrepo:
     requests:
       memory: 1Gi
       cpu: 256m
-
+  persistence:
+    enabled: true
 fits:
   enabled: true
   resources:
