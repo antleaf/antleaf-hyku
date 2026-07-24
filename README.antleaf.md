@@ -1,6 +1,6 @@
 # Antleaf Hyku Notes
 
-This file contains Antleaf-specific setup and deployment notes for this knapsack.
+This file contains Antleaf-specific setup and deployment notes for Hyku. Hyku should be checked out locally and these instructions applied there.
 
 ## Local Development
 
@@ -34,8 +34,7 @@ sc config | grep HYKU_ADMIN_HOST
 
 ## Kubernetes Deployment
 
-Antleaf cluster deployment uses the local Helm wrapper with Antleaf image names
-and the Antleaf values file at `ops/deploy.yaml`.
+Antleaf cluster deployment uses the local Helm wrapper with Antleaf image names and the Antleaf values file at `ops/deploy.yaml`.
 
 For the command above, both the release name and namespace are `hyku`.
 
@@ -44,7 +43,7 @@ tag, set `DEPLOY_TAG`; `WORKER_TAG` defaults to the same value.
 
 ### If just deploying with existing images:
 ```bash
-export DEPLOY_TAG="v1.2.3" && \
+export DEPLOY_TAG="v1.2.4" && \
   export DEPLOY_IMAGE="antleaf/antleaf-hyku-web" && \
   export WORKER_IMAGE="antleaf/antleaf-hyku-worker" && \
   export HELM_EXTRA_ARGS="--values ops/deploy.yaml" && \
@@ -53,7 +52,7 @@ export DEPLOY_TAG="v1.2.3" && \
 
 ### If deploying with a new image tag:
 ```bash
-export DEPLOY_TAG="v1.2.3" && \
+export DEPLOY_TAG="v1.2.4" && \
   export DEPLOY_IMAGE="antleaf/antleaf-hyku-web" && \
   export WORKER_IMAGE="antleaf/antleaf-hyku-worker" && \
   docker buildx build -f Dockerfile --target hyku-web --platform linux/amd64,linux/arm64 --push -t $DEPLOY_IMAGE:$DEPLOY_TAG . && \
