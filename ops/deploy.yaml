@@ -113,8 +113,9 @@ extraEnvVars: &envVars
     value: support@antleaf.com
   - name: INITIAL_ADMIN_PASSWORD
     valueFrom:
-      secretKeyRef: hyku-secrets
-      key: INITIAL_ADMIN_PASSWORD
+      secretKeyRef:
+        name: hyku-secrets
+        key: INITIAL_ADMIN_PASSWORD
   - name: IN_DOCKER
     value: "true"
   - name: LD_LIBRARY_PATH
@@ -191,8 +192,9 @@ extraEnvVars: &envVars
     value: "support@antleaf.com"
   - name: SMTP_PASSWORD
     valueFrom:
-      secretKeyRef: hyku-secrets
-      key: SMTP_PASSWORD
+      secretKeyRef:
+        name: hyku-secrets
+        key: SMTP_PASSWORD
   - name: SMTP_STARTTLS
     value: "false"
   - name: SOLR_ADMIN_USER
