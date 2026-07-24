@@ -37,8 +37,8 @@ helm upgrade \
     --set image.tag="$DEPLOY_TAG" \
     --set worker.image.repository="$WORKER_IMAGE" \
     --set worker.image.tag="$DEPLOY_TAG" \
-    --set-literal secrets.SMTP_PASSWORD="$ANTLEAF_SUPPORT_SMTP_PASSWORD" \
-    --set-literal secrets.INITIAL_ADMIN_PASSWORD="$ANTLEAF_HYKU_ADMIN_PASSWORD" \
+    --set-literal extraEnvVars.SMTP_PASSWORD="$ANTLEAF_SUPPORT_SMTP_PASSWORD" \
+    --set-literal extraEnvVars.INITIAL_ADMIN_PASSWORD="$ANTLEAF_HYKU_ADMIN_PASSWORD" \
     $HELM_EXTRA_ARGS \
     --namespace="$namespace" \
     --create-namespace \
