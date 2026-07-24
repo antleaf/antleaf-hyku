@@ -276,7 +276,7 @@ postgresql:
   primary:
     resources:
       limits:
-        memory: 512Gi
+        memory: 512Mi
         cpu: 500m
       requests:
         memory: 128Mi
