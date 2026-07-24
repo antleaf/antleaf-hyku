@@ -71,6 +71,10 @@ ingress:
       secretName: antleaf-hyku-tls
 
 extraEnvVars: &envVars
+  - name: INITIAL_ADMIN_PASSWORD
+    value: ""
+  - name: SMTP_PASSWORD
+    value: ""
   - name: CONFDIR
     value: /app/samvera/hyrax-webapp/solr/conf
   - name: DB_ADAPTER
@@ -111,8 +115,6 @@ extraEnvVars: &envVars
     value: hyku-demo@hyku-demo.iam.gserviceaccount.com
   - name: INITIAL_ADMIN_EMAIL
     value: support@antleaf.com
-  - name: INITIAL_ADMIN_PASSWORD
-    value: ""
   - name: IN_DOCKER
     value: "true"
   - name: LD_LIBRARY_PATH
@@ -189,8 +191,6 @@ extraEnvVars: &envVars
     value: "support@antleaf.com"
   - name: SMTP_STARTTLS
     value: "false"
-  - name: SMTP_PASSWORD
-    value: ""
   - name: SOLR_ADMIN_USER
     value: admin
   - name: SOLR_ADMIN_PASSWORD
