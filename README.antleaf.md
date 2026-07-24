@@ -10,7 +10,7 @@ This can be configured in `.env.development` which has precedence over the defau
 
 
 ### Eample `.env.development` file
-```dotenv
+```env
 APP_NAME=antleaf-hyku
 INITIAL_ADMIN_EMAIL=support@antleaf.com
 INITIAL_ADMIN_PASSWORD=$ANTLEAF_HYKU_ADMIN_PASSWORD
