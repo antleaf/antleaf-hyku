@@ -34,6 +34,14 @@ sc config | grep HYKU_ADMIN_HOST
 
 ## Kubernetes Deployment
 
+### Create secret to hold Antleaf Robot Email Account for SMTP (uses Google application password)
+
+```bash
+kubectl create secret generic -n hyku hyku-secrets \
+  --from-literal=SMTP_PASSWORD=$ANTLEAF_SUPPORT_SMTP_PASSWORD \
+  --from-literal=INITIAL_ADMIN_PASSWORD=$ANTLEAF_HYKU_ADMIN_PASSWORD
+```
+
 Antleaf cluster deployment uses the local Helm wrapper with Antleaf image names and the Antleaf values file at `ops/deploy.yaml`.
 
 For the command above, both the release name and namespace are `hyku`.
