@@ -71,44 +71,20 @@ ingress:
       secretName: antleaf-hyku-tls
 
 extraEnvVars: &envVars
+  - name: HYRAX_SKIP_WINGS
+    value: "true"
   - name: CONFDIR
     value: /app/samvera/hyrax-webapp/solr/conf
   - name: DB_ADAPTER
     value: postgresql
   - name: DB_HOST
-    value: hyku-postgresql
+    value: ppostgres-antleaf-rw.default.svc.cluster.local
   - name: DB_PORT
     value: "5432"
   - name: DB_NAME
     value: hyrax
   - name: DB_USER
     value: hyrax
-  - name: FCREPO_BASE_PATH
-    value: /hykudemo
-  - name: FCREPO_HOST
-    value: hyku-fcrepo
-  - name: FCREPO_PORT
-    value: "8080"
-  - name: FCREPO_REST_PATH
-    value: rest
-  - name: GOOGLE_ACCOUNT_JSON
-    value: ""
-  - name: GOOGLE_ANALYTICS_ID
-    value: ""
-  - name: GOOGLE_ANALYTICS_PROPERTY_ID
-    value: ""
-  - name: GOOGLE_OAUTH_APP_NAME
-    value: hyku-demo
-  - name: GOOGLE_OAUTH_APP_VERSION
-    value: "1.0"
-  - name: GOOGLE_OAUTH_PRIVATE_KEY_SECRET
-    value: ""
-  - name: GOOGLE_OAUTH_PRIVATE_KEY_PATH
-    value: prod-cred.p12
-  - name: GOOGLE_OAUTH_PRIVATE_KEY_VALUE
-    value: ""
-  - name: GOOGLE_OAUTH_CLIENT_EMAIL
-    value: hyku-demo@hyku-demo.iam.gserviceaccount.com
   - name: INITIAL_ADMIN_EMAIL
     value: support@antleaf.com
   - name: INITIAL_ADMIN_PASSWORD
@@ -146,8 +122,8 @@ extraEnvVars: &envVars
     value: "false"
   - name: HYRAX_ANALYTICS
     value: "false"
-  - name: HYRAX_ANALYTICS_PROVIDER
-    value: ga4
+  # - name: HYRAX_ANALYTICS_PROVIDER
+  #   value: ga4
   - name: HYRAX_ANALYTICS_REPORTING
     value: "false"
   - name: HYRAX_FITS_PATH
@@ -249,55 +225,11 @@ embargoRelease:
 leaseRelease:
   enabled: false
 
-fcrepo:
-  enabled: true
-  healthCheck:
-    initialDelay: 120
-  resources:
-    limits:
-      memory: 2Gi
-      cpu: 500m
-    requests:
-      memory: 1Gi
-      cpu: 256m
-  persistence:
-    enabled: true
-fits:
-  enabled: true
-  resources:
-    limits:
-      memory: 1Gi
-      cpu: 500m
-    requests:
-      memory: 256Mi
-      cpu: 100m
 
+fcrepo:
+  enabled: false
 postgresql:
-  enabled: true
-  auth:
-    database: hyrax
-    postgresPassword: postgres
-    password: hyrax_pass
-    username: hyrax
-  primary:
-    resources:
-      limits:
-        memory: 512Mi
-        cpu: 500m
-      requests:
-        memory: 128Mi
-        cpu: 100m
-    initdb:
-      user: postgres
-      password: postgres
-      scripts:
-        01-hyku-extensions.sql: |
-          ALTER USER hyrax WITH SUPERUSER;
-          CREATE SCHEMA IF NOT EXISTS shared_extensions;
-          CREATE EXTENSION IF NOT EXISTS hstore SCHEMA shared_extensions;
-          CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA shared_extensions;
-          CREATE EXTENSION IF NOT EXISTS pgcrypto SCHEMA shared_extensions;
-          GRANT USAGE ON SCHEMA shared_extensions TO public;
+  enabled: false
 
 redis:
   enabled: true
@@ -312,14 +244,6 @@ redis:
       requests:
         memory: 128Mi
         cpu: 50m
-#  replica:
-#    resources:
-#      limits:
-#        memory: 256Mi
-#        cpu: 100m
-#      requests:
-#        memory: 128Mi
-#        cpu: 50m
 
 solr:
   enabled: true
@@ -373,26 +297,13 @@ solr:
     persistence:
       enabled: true
 
-#externalFcrepoHost: hyku-fcrepo
+externalPostgresql:
+  host: ppostgres-antleaf-rw.default.svc.cluster.local
+  username: hyrax
+  password: 
+  database: hyrax
+  port: 5432
 
-#externalPostgresql:
-#  host: hyku-postgresql
-#  username: hyrax
-#  password: hyrax_pass
-#
-#externalSolrHost: hyku-solr
-#externalSolrPort: "8983"
-#externalSolrUser: admin
-#externalSolrCollection: hyku-demo
-#externalSolrPassword: SolrRocks
-
-global:
-  postgresql:
-    auth:
-      postgresPassword: postgres
-      username: hyrax
-      password: hyrax_pass
-  hyraxName: hyku-demo-hyrax
 
 nginx:
   enabled: false

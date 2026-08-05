@@ -44,10 +44,18 @@ kubectl create secret generic -n hyku hyku-secrets \
 
 Antleaf cluster deployment uses the local Helm wrapper with Antleaf image names and the Antleaf values file at `ops/deploy.yaml`.
 
-For the command above, both the release name and namespace are `hyku`.
+For the command below, both the release name and namespace are `hyku`.
+
+**Make sure that the local `env` variable `ANTLEAF_HYKU_DB_PASSWORD` exists on your local machine (it is required by the `bin/helm_deploy` command).**
+
 
 By default, `bin/helm_deploy` deploys image tag `latest`. To deploy a specific
 tag, set `DEPLOY_TAG`; `WORKER_TAG` defaults to the same value.
+
+
+<!-- export DEPLOY_TAG="v1.2.4" -->
+<!-- export DEPLOY_TAG="v1.0.0_knapsack" -->
+
 
 ### If just deploying with existing images:
 ```bash

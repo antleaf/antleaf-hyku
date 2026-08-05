@@ -37,6 +37,7 @@ helm upgrade \
     --set image.tag="$DEPLOY_TAG" \
     --set worker.image.repository="$WORKER_IMAGE" \
     --set worker.image.tag="$DEPLOY_TAG" \
+    --set externalPostgresql.password="$ANTLEAF_HYKU_DB_PASSWORD" \
     $HELM_EXTRA_ARGS \
     --namespace="$namespace" \
     --create-namespace \
