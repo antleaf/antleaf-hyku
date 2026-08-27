@@ -85,6 +85,11 @@ extraEnvVars: &envVars
     value: hyrax
   - name: DB_USER
     value: hyrax
+  - name: DB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: hyku-secrets
+        key: DB_PASSWORD
   - name: INITIAL_ADMIN_EMAIL
     value: support@antleaf.com
   - name: INITIAL_ADMIN_PASSWORD
@@ -300,7 +305,7 @@ solr:
 externalPostgresql:
   host: ppostgres-antleaf-rw.default.svc.cluster.local
   username: hyrax
-  password: 
+  password:
   database: hyrax
   port: 5432
 

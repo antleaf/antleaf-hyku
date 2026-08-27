@@ -39,7 +39,8 @@ sc config | grep HYKU_ADMIN_HOST
 ```bash
 kubectl create secret generic -n hyku hyku-secrets \
   --from-literal=SMTP_PASSWORD=$ANTLEAF_SUPPORT_SMTP_PASSWORD \
-  --from-literal=INITIAL_ADMIN_PASSWORD=$ANTLEAF_HYKU_ADMIN_PASSWORD
+  --from-literal=INITIAL_ADMIN_PASSWORD=$ANTLEAF_HYKU_ADMIN_PASSWORD \
+  --from-literal=DB_PASSWORD=$ANTLEAF_HYKU_DB_PASSWORD
 ```
 
 Antleaf cluster deployment uses the local Helm wrapper with Antleaf image names and the Antleaf values file at `ops/deploy.yaml`.
