@@ -156,6 +156,9 @@ extraEnvVars: &envVars
     value: password
   - name: SMTP_ENABLED
     value: "false"
+  # Hyku appends each tenant's collection name to this SolrCloud base URL.
+  - name: SOLR_URL
+    value: http://admin:SolrRocksLocal@hyku-solr:8983/solr/
   - name: SENTRY_DSN
     value: ""
   - name: SENTRY_ENVIRONMENT

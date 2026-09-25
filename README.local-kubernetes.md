@@ -162,4 +162,6 @@ kubectl --context docker-desktop delete namespace cnpg-system --wait=true
 ```
 
 Afterward, follow this guide from **Install the PostgreSQL operator** to build
-a fresh local deployment.
+a fresh local deployment. Helm retains CloudNativePG's cluster-wide CRD
+definitions when the operator is uninstalled; they contain no running database
+or local application data after the namespaces above are removed.
