@@ -1,17 +1,3 @@
-# Helm values for the Kubernetes cluster bundled with Docker Desktop.
-#
-# Deploy with:
-#   # Install the standalone CloudNativePG cluster and create hyku-secrets as
-#   # documented in README.local-kubernetes.md, or run ./bin/deploy_local.
-#   helm --kube-context docker-desktop upgrade --install hyku ./hyrax \
-#     --namespace hyku \
-#     --values ops/deploy-local.yaml \
-#     --set-string externalPostgresql.password="$ANTLEAF_HYKU_DB_PASSWORD"
-#
-# Access the application with:
-#   kubectl --context docker-desktop --namespace hyku port-forward service/hyku-hyrax 3000:80
-#   open http://antleaf-hyku.localhost.direct:3000
-
 replicaCount: 1
 
 image:
