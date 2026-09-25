@@ -34,6 +34,11 @@ sc config | grep HYKU_ADMIN_HOST
 
 ## Kubernetes Deployment
 
+For Docker Desktop Kubernetes on macOS, see
+[README.local-kubernetes.md](README.local-kubernetes.md).
+
+### Production cluster
+
 ### Create secret to hold Antleaf Robot Email Account for SMTP (uses Google application password)
 
 ```bash

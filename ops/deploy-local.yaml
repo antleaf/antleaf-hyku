@@ -1,0 +1,278 @@
+# Helm values for the Kubernetes cluster bundled with Docker Desktop.
+#
+# Deploy with:
+#   # Install the standalone CloudNativePG cluster and create hyku-secrets as
+#   # documented in README.local-kubernetes.md, or run ./bin/deploy_local.
+#   helm --kube-context docker-desktop upgrade --install hyku ./hyrax \
+#     --namespace hyku \
+#     --values ops/deploy-local.yaml \
+#     --set-string externalPostgresql.password="$ANTLEAF_HYKU_DB_PASSWORD"
+#
+# Access the application with:
+#   kubectl --context docker-desktop --namespace hyku port-forward service/hyku-hyrax 3000:80
+#   open http://antleaf-hyku.localhost.direct:3000
+
+replicaCount: 1
+
+image:
+  repository: antleaf/antleaf-hyku-web
+  tag: v1.2.4
+  pullPolicy: IfNotPresent
+
+resources:
+  limits:
+    cpu: "2"
+    memory: 3Gi
+  requests:
+    cpu: 100m
+    memory: 1Gi
+
+# Startup can take several minutes on Docker Desktop while Rails prepares the
+# database and Solr collection. These probes are intentionally disabled for a
+# predictable first local install.
+livenessProbe:
+  enabled: false
+readinessProbe:
+  enabled: false
+
+brandingVolume:
+  storageClass: standard
+  size: 1Gi
+derivativesVolume:
+  storageClass: standard
+  size: 2Gi
+uploadsVolume:
+  storageClass: standard
+  size: 2Gi
+
+extraVolumeMounts:
+  - name: uploads
+    mountPath: /app/samvera/hyrax-webapp/tmp/imports
+    subPath: imports
+  - name: uploads
+    mountPath: /app/samvera/hyrax-webapp/tmp/exports
+    subPath: exports
+  - name: uploads
+    mountPath: /app/samvera/hyrax-webapp/public/system
+    subPath: public-system
+  - name: uploads
+    mountPath: /app/samvera/hyrax-webapp/public/uploads
+    subPath: public-uploads
+  - name: uploads
+    mountPath: /app/samvera/hyrax-webapp/tmp/network_files
+    subPath: network-files
+  - name: uploads
+    mountPath: /app/samvera/hyrax-webapp/storage/files
+    subPath: storage-files
+  - name: uploads
+    mountPath: /app/samvera/hyrax-webapp/log/rack_attack
+    subPath: rack-attack
+  - name: local-rails-config
+    mountPath: /app/samvera/hyrax-webapp/config/initializers/local_disable_force_ssl.rb
+    subPath: local_disable_force_ssl.rb
+    readOnly: true
+
+extraVolumes:
+  - name: local-rails-config
+    configMap:
+      name: hyku-local-rails-config
+
+extraDeploy:
+  # The chart's extraDeploy template trims the newline following its document
+  # separator, so this string intentionally starts with a newline.
+  - "\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: hyku-local-rails-config\ndata:\n  local_disable_force_ssl.rb: |\n    # Docker Desktop uses an HTTP port-forward; production forces SSL.\n    Rails.application.config.force_ssl = false\n"
+
+ingress:
+  enabled: false
+
+service:
+  type: ClusterIP
+  port: 80
+
+extraEnvVars: &envVars
+  - name: HYRAX_SKIP_WINGS
+    value: "true"
+  - name: CONFDIR
+    value: /app/samvera/hyrax-webapp/solr/conf
+  - name: DB_ADAPTER
+    value: postgresql
+  - name: DB_HOST
+    value: ppostgres-antleaf-rw.postgres.svc.cluster.local
+  - name: DB_PORT
+    value: "5432"
+  - name: DB_NAME
+    value: hyrax
+  - name: DB_USER
+    value: hyrax
+  - name: DB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: hyku-secrets
+        key: DB_PASSWORD
+  - name: INITIAL_ADMIN_EMAIL
+    value: support@antleaf.com
+  - name: INITIAL_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: hyku-secrets
+        key: INITIAL_ADMIN_PASSWORD
+  - name: IN_DOCKER
+    value: "true"
+  - name: LD_LIBRARY_PATH
+    value: /app/fits/tools/mediainfo/linux
+  - name: PASSENGER_APP_ENV
+    value: production
+  - name: RAILS_ENV
+    value: production
+  - name: RAILS_LOG_TO_STDOUT
+    value: "true"
+  - name: RAILS_MAX_THREADS
+    value: "5"
+  - name: RAILS_SERVE_STATIC_FILES
+    value: "true"
+  - name: HYRAX_ACTIVE_JOB_QUEUE
+    value: inline
+  - name: HYKU_BULKRAX_ENABLED
+    value: "true"
+  - name: HYKU_CONTACT_EMAIL
+    value: support@antleaf.com
+  - name: HYKU_FILE_ACL
+    value: "false"
+  - name: HYRAX_ANALYTICS
+    value: "false"
+  - name: HYRAX_ANALYTICS_REPORTING
+    value: "false"
+  - name: HYRAX_FITS_PATH
+    value: /app/fits/fits.sh
+  - name: HYRAX_FLEXIBLE
+    value: "true"
+  - name: HYRAX_VALKYRIE
+    value: "true"
+  - name: HYKU_ADMIN_HOST
+    value: antleaf-hyku.localhost.direct
+  - name: HYKU_ADMIN_ONLY_TENANT_CREATION
+    value: "true"
+  - name: HYKU_BLOCK_VALKYRIE_REDIRECT
+    value: "false"
+  - name: HYKU_ALLOW_SIGNUP
+    value: "false"
+  - name: HYKU_DEFAULT_HOST
+    value: "%{tenant}.antleaf-hyku.localhost.direct"
+  - name: HYKU_FOOTER_EXTRA
+    value: "Sponsored by <a href='https://antleaf.com' class='navbar-link' target='_blank'>Antleaf</a>"
+  - name: HYKU_MULTITENANT
+    value: "true"
+  - name: HYKU_ROOT_HOST
+    value: antleaf-hyku.localhost.direct
+  - name: HYKU_SHOW_BACKTRACE
+    value: "true"
+  - name: HYKU_USER_DEFAULT_PASSWORD
+    value: password
+  - name: SMTP_ENABLED
+    value: "false"
+  - name: SENTRY_DSN
+    value: ""
+  - name: SENTRY_ENVIRONMENT
+    value: local
+  - name: VALKYRIE_TRANSITION
+    value: "true"
+
+worker:
+  # Docker Desktop's default host-path storage is single-node. Running jobs
+  # inline keeps all file access in the web pod and lets its PVCs use RWO.
+  enabled: false
+
+podSecurityContext:
+  runAsUser: 1001
+  runAsGroup: 101
+  fsGroup: 101
+  fsGroupChangePolicy: OnRootMismatch
+
+embargoRelease:
+  enabled: false
+leaseRelease:
+  enabled: false
+
+# Hyku's Valkyrie mode does not use Fedora. PostgreSQL is managed separately
+# by CloudNativePG, as in the production cluster.
+fcrepo:
+  enabled: false
+fits:
+  enabled: false
+postgresql:
+  enabled: false
+
+externalPostgresql:
+  host: ppostgres-antleaf-rw.postgres.svc.cluster.local
+  username: hyrax
+  database: hyrax
+  port: 5432
+  # Supplied at deploy time to populate the chart's DATABASE_URL Secret.
+  password: ""
+
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    password: redis-local-password
+  master:
+    persistence:
+      size: 1Gi
+    resources:
+      limits:
+        cpu: 250m
+        memory: 512Mi
+      requests:
+        cpu: 50m
+        memory: 128Mi
+
+solr:
+  enabled: true
+  replicaCount: 1
+  collectionShards: 1
+  collectionReplicas: 1
+  auth:
+    enabled: true
+    adminUsername: admin
+    adminPassword: SolrRocksLocal
+  coreNames: hyku-demo
+  collection: ""
+  cloudBootstrap: true
+  cloudEnabled: true
+  persistence:
+    enabled: true
+    size: 2Gi
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: 100m
+      memory: 768Mi
+  extraEnvVars:
+    - name: JAVA_TOOL_OPTIONS
+      value: -Xshare:off
+  startupProbe:
+    enabled: true
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 15
+    failureThreshold: 24
+  zookeeper:
+    enabled: true
+    replicaCount: 1
+    persistence:
+      enabled: true
+      size: 1Gi
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+nginx:
+  enabled: false
+  service:
+    port: 80
