@@ -106,7 +106,7 @@ kubectl --context docker-desktop --namespace hyku port-forward service/hyku-hyra
 Then open:
 
 ```text
-http://antleaf-hyku.localhost.direct:3000
+http://antleaf-hyku.localhost:3000
 ```
 
 ## Local configuration details

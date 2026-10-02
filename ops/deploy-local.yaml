@@ -135,7 +135,7 @@ extraEnvVars: &envVars
   - name: HYRAX_VALKYRIE
     value: "true"
   - name: HYKU_ADMIN_HOST
-    value: antleaf-hyku.localhost.direct
+    value: antleaf-hyku.localhost
   - name: HYKU_ADMIN_ONLY_TENANT_CREATION
     value: "true"
   - name: HYKU_BLOCK_VALKYRIE_REDIRECT
@@ -143,13 +143,13 @@ extraEnvVars: &envVars
   - name: HYKU_ALLOW_SIGNUP
     value: "false"
   - name: HYKU_DEFAULT_HOST
-    value: "%{tenant}.antleaf-hyku.localhost.direct"
+    value: "%{tenant}.antleaf-hyku.localhost"
   - name: HYKU_FOOTER_EXTRA
     value: "Sponsored by <a href='https://antleaf.com' class='navbar-link' target='_blank'>Antleaf</a>"
   - name: HYKU_MULTITENANT
     value: "true"
   - name: HYKU_ROOT_HOST
-    value: antleaf-hyku.localhost.direct
+    value: antleaf-hyku.localhost
   - name: HYKU_SHOW_BACKTRACE
     value: "true"
   - name: HYKU_USER_DEFAULT_PASSWORD
