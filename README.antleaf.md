@@ -85,7 +85,7 @@ export DEPLOY_TAG="v1.2.4" && \
   docker buildx build -f Dockerfile --target hyku-worker --platform linux/amd64,linux/arm64 --push -t $WORKER_IMAGE:$DEPLOY_TAG . && \
   export HELM_EXTRA_ARGS="--values ops/deploy.yaml" && \
   ./bin/helm_deploy hyku hyku
-```
+```-->
 
 ## Uninstall
 
