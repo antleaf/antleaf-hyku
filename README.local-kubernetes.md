@@ -86,6 +86,7 @@ helm --kube-context docker-desktop upgrade --install hyku ./hyrax \
   --values ops/deploy-local.yaml \
   --set-string externalPostgresql.password="${ANTLEAF_HYKU_DB_PASSWORD}" \
   --timeout 20m \
+  --rollback-on-failure \
   --wait
 ```
 

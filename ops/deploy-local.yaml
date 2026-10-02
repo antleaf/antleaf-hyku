@@ -169,7 +169,15 @@ extraEnvVars: &envVars
 worker:
   # Docker Desktop's default host-path storage is single-node. Running jobs
   # inline keeps all file access in the web pod and lets its PVCs use RWO.
-  enabled: false
+  enabled: true
+  replicaCount: 1
+  # extraVolumeMounts: *volMounts
+  # extraEnvVars: *envVars
+  # podSecurityContext:
+  #   runAsUser: 1001
+  #   runAsGroup: 101
+  #   fsGroup: 101
+  #   fsGroupChangePolicy: OnRootMismatch
 
 podSecurityContext:
   runAsUser: 1001
@@ -187,7 +195,7 @@ leaseRelease:
 fcrepo:
   enabled: false
 fits:
-  enabled: false
+  enabled: true
 postgresql:
   enabled: false
 
