@@ -60,14 +60,23 @@ tag, set `DEPLOY_TAG`; `WORKER_TAG` defaults to the same value.
 
 ### If just deploying with existing images:
 ```bash
-export DEPLOY_TAG="v1.2.4" && \
+export DEPLOY_TAG="v1.2.6" && \
   export DEPLOY_IMAGE="antleaf/antleaf-hyku-web" && \
   export WORKER_IMAGE="antleaf/antleaf-hyku-worker" && \
   export HELM_EXTRA_ARGS="--values ops/deploy.yaml" && \
   ./bin/helm_deploy hyku hyku
 ```
 
-### If deploying with a new image tag:
+### Building with a new image tag:
+```bash
+export DEPLOY_TAG="v1.2.6" && \
+  export DEPLOY_IMAGE="antleaf/antleaf-hyku-web" && \
+  export WORKER_IMAGE="antleaf/antleaf-hyku-worker" && \
+  docker buildx build -f Dockerfile --target hyku-web --platform linux/amd64,linux/arm64 --push -t $DEPLOY_IMAGE:$DEPLOY_TAG . && \
+  docker buildx build -f Dockerfile --target hyku-worker --platform linux/amd64,linux/arm64 --push -t $WORKER_IMAGE:$DEPLOY_TAG .
+```
+
+<!--### If deploying with a new image tag:
 ```bash
 export DEPLOY_TAG="v1.2.4" && \
   export DEPLOY_IMAGE="antleaf/antleaf-hyku-web" && \
