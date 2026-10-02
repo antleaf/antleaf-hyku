@@ -1,0 +1,29 @@
+# Standalone local PostgreSQL, managed by the CloudNativePG operator.
+# Create the postgres namespace and hyku-db-credentials Secret first; see
+# README.local-kubernetes.md. Keep this Cluster independent of the Hyku release.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: ppostgres-antleaf
+  namespace: postgres
+spec:
+  instances: 1
+  storage:
+    storageClass: standard
+    size: 2Gi
+  bootstrap:
+    initdb:
+      database: hyrax
+      owner: hyrax
+      secret:
+        name: hyku-db-credentials
+      # These run as a superuser against hyrax during initial bootstrap.
+      postInitApplicationSQL:
+        # Hyku's db setup runs db:create and creates tenant databases.
+        - ALTER ROLE hyrax CREATEDB
+        - CREATE SCHEMA IF NOT EXISTS shared_extensions
+        - CREATE EXTENSION IF NOT EXISTS hstore SCHEMA shared_extensions
+        - CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA shared_extensions
+        - CREATE EXTENSION IF NOT EXISTS pgcrypto SCHEMA shared_extensions
+        - CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA shared_extensions
+        - GRANT USAGE ON SCHEMA shared_extensions TO PUBLIC
