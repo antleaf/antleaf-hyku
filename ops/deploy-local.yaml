@@ -31,7 +31,10 @@ uploadsVolume:
   storageClass: standard
   size: 2Gi
 
-extraVolumeMounts:
+sharedPvcAccessModes:
+  - ReadWriteOnce
+
+extraVolumeMounts: &volMounts
   - name: uploads
     mountPath: /app/samvera/hyrax-webapp/tmp/imports
     subPath: imports
@@ -116,8 +119,9 @@ extraEnvVars: &envVars
     value: "5"
   - name: RAILS_SERVE_STATIC_FILES
     value: "true"
+  # Queue jobs in PostgreSQL so the separate worker pod can process them.
   - name: HYRAX_ACTIVE_JOB_QUEUE
-    value: inline
+    value: good_job
   - name: HYKU_BULKRAX_ENABLED
     value: "true"
   - name: HYKU_CONTACT_EMAIL
@@ -167,17 +171,32 @@ extraEnvVars: &envVars
     value: "true"
 
 worker:
-  # Docker Desktop's default host-path storage is single-node. Running jobs
-  # inline keeps all file access in the web pod and lets its PVCs use RWO.
   enabled: true
   replicaCount: 1
-  # extraVolumeMounts: *volMounts
-  # extraEnvVars: *envVars
-  # podSecurityContext:
-  #   runAsUser: 1001
-  #   runAsGroup: 101
-  #   fsGroup: 101
-  #   fsGroupChangePolicy: OnRootMismatch
+  image:
+    repository: antleaf/antleaf-hyku-worker
+    tag: v1.2.4
+    pullPolicy: IfNotPresent
+  extraVolumeMounts: *volMounts
+  extraVolumes:
+    - name: local-rails-config
+      configMap:
+        name: hyku-local-rails-config
+  podSecurityContext:
+    runAsUser: 1001
+    runAsGroup: 101
+    fsGroup: 101
+    fsGroupChangePolicy: OnRootMismatch
+  # RWO claims can be shared by pods on one node. Follow the web pod if this
+  # Docker Desktop cluster is expanded to multiple nodes.
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: hyrax
+              app.kubernetes.io/instance: hyku
+          topologyKey: kubernetes.io/hostname
 
 podSecurityContext:
   runAsUser: 1001

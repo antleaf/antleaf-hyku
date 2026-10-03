@@ -77,6 +77,28 @@ kubectl --context docker-desktop create secret generic hyku-secrets \
 
 ## Deploy
 
+Apply the local chart patch once after checking out the `hyrax` charts. Docker Desktop's
+`standard` storage class does not provide `ReadWriteMany`, so when running locally
+we have to use `ReadWriteOnce` and ensure the worker and web pods run on the same node.
+This second part is achieved by using pod affinity in deploy-local.yaml
+
+```bash
+patch -d hyrax -p1 <<'PATCH'
+--- a/templates/_helpers.tpl
++++ b/templates/_helpers.tpl
+@@ -231,3 +231,8 @@
+ {{- define "hyrax.sharedPvcAccessModes" -}}
+-{{- if .Values.worker.enabled }}
++{{/* Override only when all PVC consumers are constrained to one node. */}}
++{{/* Otherwise, keep the worker-aware default access mode below. */}}
++{{- if .Values.sharedPvcAccessModes }}
++accessModes:
++{{- toYaml .Values.sharedPvcAccessModes | nindent 2 }}
++{{- else if .Values.worker.enabled }}
+ accessModes:
+PATCH
+```
+
 Hyku reads its database password from `hyku-secrets` at runtime. The same
 value is supplied to Helm so the chart can generate Hyku's `DATABASE_URL`:
 
@@ -96,6 +118,12 @@ Watch the initial startup with:
 kubectl --context docker-desktop --namespace hyku get pods --watch
 ```
 
+Confirm the worker deployment is available:
+
+```bash
+kubectl --context docker-desktop --namespace hyku get deployment hyku-hyrax-worker
+```
+
 ## Access Hyku
 
 Expose the ClusterIP service from another terminal:
@@ -112,9 +140,15 @@ http://antleaf-hyku.localhost:3000
 
 ## Local configuration details
 
-The local values use the standalone CloudNativePG database plus bundled Redis,
-Solr, and ZooKeeper with Docker Desktop's `standard` storage class. They do not
+The local values run one web pod and one worker pod with GoodJob, using the
+standalone CloudNativePG database plus bundled Redis, Solr, and ZooKeeper with
+Docker Desktop's `standard` storage class. Web and worker share the existing
+`ReadWriteOnce` volumes on Docker Desktop's single node. They do not
 use production NFS, ingress, TLS, SMTP, or public hostnames. 
+
+If Docker Desktop is changed to a multi-node `kind` cluster, the worker has
+required pod affinity with the web pod so both stay on one Kubernetes node.
+The worker will remain Pending if it cannot be placed on the web pod's node.
 
 On a fresh PostgreSQL volume, CloudNativePG's bootstrap creates the
 `shared_extensions` schema and the `hstore`, `uuid-ossp`, `pgcrypto`, and
