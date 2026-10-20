@@ -57,8 +57,8 @@ extraVolumeMounts: &volMounts
     mountPath: /app/samvera/hyrax-webapp/log/rack_attack
     subPath: rack-attack
   - name: local-rails-config
-    mountPath: /app/samvera/hyrax-webapp/config/initializers/local_disable_force_ssl.rb
-    subPath: local_disable_force_ssl.rb
+    mountPath: /app/samvera/hyrax-webapp/config/initializers/local_force_ssl.rb
+    subPath: local_force_ssl.rb
     readOnly: true
 
 extraVolumes:
@@ -69,10 +69,34 @@ extraVolumes:
 extraDeploy:
   # The chart's extraDeploy template trims the newline following its document
   # separator, so this string intentionally starts with a newline.
-  - "\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: hyku-local-rails-config\ndata:\n  local_disable_force_ssl.rb: |\n    # Docker Desktop uses an HTTP port-forward; production forces SSL.\n    Rails.application.config.force_ssl = false\n"
+  - "\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: hyku-local-rails-config\ndata:\n  local_force_ssl.rb: |\n    # HTTPS terminates at Cloudflare and passes through NGINX ingress.\n    Rails.application.config.force_ssl = true\n"
 
 ingress:
-  enabled: false
+  enabled: true
+  ingressClassName: nginx
+  annotations:
+    # Exempt HTTP-01 solver paths from NGINX HTTPS redirects.
+    acme.cert-manager.io/http01-edit-in-place: "true"
+    nginx.org/redirect-to-https: "true"
+    nginx.org/ssl-redirect: "false"
+    # Rails sees HTTPS through NGINX; Cloudflare also terminates browser TLS.
+    nginx.org/proxy-set-headers: "X-Forwarded-Proto: https"
+  hosts:
+    - host: hyku-dev.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+    # Origin routing can remain wildcard; publish individual tenants in Cloudflare.
+    - host: "*.hyku-dev.example.com"
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: hyku-letsencrypt-tls
+      # Tunnel SNI always uses the root certificate name; retain tenant HTTPS routing.
+      hosts:
+        - hyku-dev.example.com
+        - "*.hyku-dev.example.com"
 
 service:
   type: ClusterIP
@@ -139,7 +163,7 @@ extraEnvVars: &envVars
   - name: HYRAX_VALKYRIE
     value: "true"
   - name: HYKU_ADMIN_HOST
-    value: antleaf-hyku.localhost
+    value: hyku-dev.example.com
   - name: HYKU_ADMIN_ONLY_TENANT_CREATION
     value: "true"
   - name: HYKU_BLOCK_VALKYRIE_REDIRECT
@@ -147,13 +171,13 @@ extraEnvVars: &envVars
   - name: HYKU_ALLOW_SIGNUP
     value: "false"
   - name: HYKU_DEFAULT_HOST
-    value: "%{tenant}.antleaf-hyku.localhost"
+    value: "%{tenant}.hyku-dev.example.com"
   - name: HYKU_FOOTER_EXTRA
     value: "Sponsored by <a href='https://antleaf.com' class='navbar-link' target='_blank'>Antleaf</a>"
   - name: HYKU_MULTITENANT
     value: "true"
   - name: HYKU_ROOT_HOST
-    value: antleaf-hyku.localhost
+    value: hyku-dev.example.com
   - name: HYKU_SHOW_BACKTRACE
     value: "true"
   - name: HYKU_USER_DEFAULT_PASSWORD

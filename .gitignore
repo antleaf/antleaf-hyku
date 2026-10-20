@@ -1,2 +1,6 @@
 .DS_Store
+ops/.local-tunnel/
 hyrax/
+
+# Python installer bytecode
+__pycache__/

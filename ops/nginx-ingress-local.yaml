@@ -1,0 +1,15 @@
+# Internal controller: Cloudflare terminates browser HTTPS; cloudflared connects over verified HTTPS.
+controller:
+  enableCustomResources: false
+  ingressClass:
+    name: nginx
+    create: true
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: "1"
+      memory: 256Mi
