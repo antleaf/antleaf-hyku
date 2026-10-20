@@ -328,7 +328,7 @@ Local dependencies are standalone CloudNativePG, Redis, Solr, ZooKeeper and FITS
 production NFS and SMTP are not used. PostgreSQL extensions are installed only
 when bootstrapping a fresh database volume.
 
-### Cloudflare routing for each tenant
+## Cloudflare routing for each tenant
 
 For every tenant, add **one published application route and one proxied CNAME**
 to the existing tunnel. Repeat these steps whenever you add a tenant, using its
