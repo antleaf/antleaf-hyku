@@ -4,6 +4,7 @@ This guide deploys Antleaf Hyku to the Kubernetes cluster bundled with Docker
 Desktop on macOS.
 
 ## Prerequisites
+
 Make sure `kubectl` is targeting Docker Desktop rather than the prod cluster.
 
 ```bash
@@ -15,15 +16,16 @@ kubectl --context docker-desktop cluster-info
 `kubectl config current-context` must print `docker-desktop`. Do not continue if
 it names the prod cluster.
 
-Install Docker Desktop with Kubernetes enabled, Helm, kubectl, Python 3, and
-OpenSSL. The commands below use Helm 4 (`--rollback-on-failure`). Set `ANTLEAF_HYKU_DB_PASSWORD` and `ANTLEAF_HYKU_ADMIN_PASSWORD` to
-local passwords. cert-manager manages origin TLS certificates.
+Install Docker Desktop with Kubernetes enabled, Helm 4, kubectl, and Python 3.
+Set `ANTLEAF_HYKU_DB_PASSWORD` and `ANTLEAF_HYKU_ADMIN_PASSWORD` to local
+passwords. The commands below use Helm 4's `--rollback-on-failure` option.
+Chart versions are pinned to the versions used to validate this setup.
 
 ## Choose your public hostnames
 
 Choose a DNS zone managed in your Cloudflare account and a root subdomain for
-this deployment. The example below uses the reserved example domain; replace
-it with your own zone before running the commands.
+this deployment. Replace the example zone and contact email below with your
+own values before running the commands.
 
 ```bash
 export HYKU_ZONE="example.com"
@@ -46,8 +48,7 @@ values of the variables; Cloudflare does not expand shell variables.
 
 ## Install the PostgreSQL operator
 
-Install CloudNativePG once per Docker Desktop cluster, using the same operator
-chart as the infrastructure repository:
+Install CloudNativePG once per Docker Desktop cluster:
 
 ```bash
 helm repo add cnpg https://cloudnative-pg.github.io/charts --force-update
@@ -170,12 +171,18 @@ to exempt the challenge path from NGINX redirects.
 
 ## Deploy
 
-Apply the local chart patch once after checking out the `hyrax` charts.
-Skip this patch if `_helpers.tpl` already contains the
-`if .Values.sharedPvcAccessModes` override. Docker Desktop's
-`standard` storage class does not provide `ReadWriteMany`, so when running locally
-we have to use `ReadWriteOnce` and ensure the worker and web pods run on the same node.
-This second part is achieved by using pod affinity in deploy-local.yaml
+Download the Hyrax chart if `hyrax/` is not already present:
+
+```bash
+helm pull --untar oci://ghcr.io/samvera/charts/hyrax --version 3.7.3
+```
+
+Apply the patch below once to that chart. Skip it if
+`hyrax/templates/_helpers.tpl` already contains the
+`if .Values.sharedPvcAccessModes` override. Docker Desktop's `standard`
+storage class requires `ReadWriteOnce` here; the local values use pod affinity
+to place web and worker on the same node so they can share those volumes.
+If you download a fresh copy of the chart later, reapply this patch.
 
 ```bash
 patch -d hyrax -p1 <<'PATCH'
@@ -207,10 +214,10 @@ helm --kube-context docker-desktop upgrade --install hyku ./hyrax \
   --wait
 ```
 
-Watch the initial startup with:
+Check the application pods after Helm completes:
 
 ```bash
-kubectl --context docker-desktop --namespace hyku get pods --watch
+kubectl --context docker-desktop --namespace hyku get pods
 ```
 
 Confirm the worker deployment is available:
@@ -258,6 +265,10 @@ the Secret. Do not paste tokens into chat or commit them to Git.
 3. Ensure the root proxied CNAME points to `<TUNNEL-UUID>.cfargotunnel.com`.
    The portal normally creates this record automatically.
 
+The root route's `/.well-known/acme-challenge/` path must be publicly reachable
+for issuance and renewal. If using Cloudflare Access or WAF challenges, exempt
+that path.
+
 Wait for the public certificate:
 
 ```bash
@@ -280,8 +291,8 @@ URL field. Never point the service at the public hostname; that creates a loop.
 
 Add an individual test route with Subdomain `${HYKU_TENANT}.${HYKU_SUBDOMAIN}`,
 Domain `$HYKU_ZONE`, Path empty, and the same permanent service and TLS settings.
-Enter those settings on each route; they are not inherited. If the portal rejects
-a nested wildcard, use individual routes. The origin ingress still accepts tenant
+Enter those settings on each route; they are not inherited. Publish one route
+per tenant. The origin ingress accepts tenant
 subdomains. Keep both the root and wildcard tenant names in `ingress.tls.hosts`
 so NGINX enables HTTPS routing for both. The certificate itself covers only the
 root origin name verified by the tunnel through Origin Server Name.
@@ -305,6 +316,11 @@ Manager. An origin Let's Encrypt certificate does not extend edge coverage.
 A fresh database has no tenants. Create the test tenant through Hyku account
 administration and set its domain to `$HYKU_TENANT_HOST`. Existing tenant domains
 are not changed by DNS or `HYKU_DEFAULT_HOST` updates.
+
+After creating the tenant, check `https://$HYKU_HOST` and
+`https://$HYKU_TENANT_HOST`. cert-manager renews the origin certificate
+automatically and NGINX loads the updated Secret. Keep the tunnel, root DNS
+record, and ACME challenge path available for renewal.
 
 Web and worker share ReadWriteOnce volumes and are constrained to the same node.
 Local dependencies are standalone CloudNativePG, Redis, Solr, ZooKeeper and FITS;
@@ -335,4 +351,4 @@ kubectl --context docker-desktop delete namespace cert-manager --wait=true
 
 Helm retains operator CRDs. Follow the guide from the beginning to rebuild.
 Recreate the token Secret and bootstrap certificate issuance through the HTTP
-origin route again. No custom setup scripts are required.
+origin route again.
