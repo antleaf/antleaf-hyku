@@ -35,16 +35,24 @@ export HYKU_TENANT="test"
 export HYKU_TENANT_HOST="${HYKU_TENANT}.${HYKU_HOST}"
 
 export LETSENCRYPT_EMAIL="you@example.com"
-
-mkdir -p ops/.local-tunnel
-sed "s/hyku-dev\\.example\\.com/${HYKU_HOST}/g" ops/deploy-local.yaml > ops/.local-tunnel/values.yaml
 ```
 
-Run these commands from the repository root. The generated values file is
-ignored by Git. Use it in every local Helm install or upgrade; regenerate it
-after changing hostnames or updating the base values. Keep these variables set
-in the terminal used for the remaining steps. In portal instructions, enter the
-values of the variables; Cloudflare does not expand shell variables.
+Edit `ops/deploy-local.yaml` before deploying:
+
+- Replace every `hyku-dev.example.com` with your chosen `$HYKU_HOST`, including
+  the root and wildcard entries under `ingress.hosts` and `ingress.tls.hosts`,
+  `HYKU_ADMIN_HOST`, `HYKU_ROOT_HOST`, and `HYKU_DEFAULT_HOST`.
+  Preserve the `*.` and `%{tenant}.` prefixes where present.
+- Set `INITIAL_ADMIN_EMAIL` and `HYKU_CONTACT_EMAIL` to your own addresses.
+
+Enter literal values in the YAML; Helm does not expand the shell variables.
+Use this file directly for every local Helm install or upgrade. Keep personal
+hostname and email substitutions out of commits so Git retains reusable example
+values.
+
+Run commands from the repository root and keep the variables above set in the
+terminal used for the remaining steps. In portal instructions, enter the values
+of the variables; Cloudflare does not expand shell variables.
 
 ## Install the PostgreSQL operator
 
@@ -207,7 +215,7 @@ value is supplied to Helm so the chart can generate Hyku's `DATABASE_URL`:
 ```bash
 helm --kube-context docker-desktop upgrade --install hyku ./hyrax \
   --namespace hyku \
-  --values ops/.local-tunnel/values.yaml \
+  --values ops/deploy-local.yaml \
   --set-string externalPostgresql.password="${ANTLEAF_HYKU_DB_PASSWORD}" \
   --timeout 20m \
   --rollback-on-failure \
@@ -311,7 +319,7 @@ Cloudflare provides a separate browser-facing edge certificate. Ensure it covers
 `$HYKU_TENANT_HOST`; nested names may require Cloudflare Advanced Certificate
 Manager. An origin Let's Encrypt certificate does not extend edge coverage.
 
-## Notes
+## Add a tenant
 
 A fresh database has no tenants. Create the test tenant through Hyku account
 administration and set its domain to `$HYKU_TENANT_HOST`. Existing tenant domains
