@@ -297,15 +297,6 @@ Then edit the root route and use these permanent settings:
 If the portal separates Type and URL, choose HTTPS and omit `https://` from the
 URL field. Never point the service at the public hostname; that creates a loop.
 
-Add an individual test route with Subdomain `${HYKU_TENANT}.${HYKU_SUBDOMAIN}`,
-Domain `$HYKU_ZONE`, Path empty, and the same permanent service and TLS settings.
-Enter those settings on each route; they are not inherited. Publish one route
-per tenant. The origin ingress accepts tenant
-subdomains. Keep both the root and wildcard tenant names in `ingress.tls.hosts`
-so NGINX enables HTTPS routing for both. The certificate itself covers only the
-root origin name verified by the tunnel through Origin Server Name.
-
-Under **your zone → DNS → Records**, ensure the test record exists:
 
 | Field | Value |
 | --- | --- |
@@ -319,11 +310,13 @@ Cloudflare provides a separate browser-facing edge certificate. Ensure it covers
 `$HYKU_TENANT_HOST`; nested names may require Cloudflare Advanced Certificate
 Manager. An origin Let's Encrypt certificate does not extend edge coverage.
 
-## Add a tenant
+## Notes
 
 A fresh database has no tenants. Create the test tenant through Hyku account
 administration and set its domain to `$HYKU_TENANT_HOST`. Existing tenant domains
 are not changed by DNS or `HYKU_DEFAULT_HOST` updates.
+For each new tenant, complete [Cloudflare routing for each tenant](#cloudflare-routing-for-each-tenant)
+before checking its public URL.
 
 After creating the tenant, check `https://$HYKU_HOST` and
 `https://$HYKU_TENANT_HOST`. cert-manager renews the origin certificate
@@ -334,6 +327,32 @@ Web and worker share ReadWriteOnce volumes and are constrained to the same node.
 Local dependencies are standalone CloudNativePG, Redis, Solr, ZooKeeper and FITS;
 production NFS and SMTP are not used. PostgreSQL extensions are installed only
 when bootstrapping a fresh database volume.
+
+### Cloudflare routing for each tenant
+
+For every tenant, add **one published application route and one proxied CNAME**
+to the existing tunnel. Repeat these steps whenever you add a tenant, using its
+short name as `$HYKU_TENANT`.
+
+1. Open **Networking → Tunnels → your tunnel → Published application routes**.
+2. Select **Add a published application** and enter:
+
+| Setting | Value |
+| --- | --- |
+| Subdomain | `${HYKU_TENANT}.${HYKU_SUBDOMAIN}` |
+| Domain | `$HYKU_ZONE` |
+| Path | Empty |
+| Service URL | `https://nginx-ingress-controller.ingress-system.svc.cluster.local:443` |
+| Additional application settings → TLS → Origin Server Name | Root hostname: `$HYKU_HOST` |
+| CA Pool | Empty |
+| No TLS Verify / Disable TLS certificate verification | Off |
+| HTTP Host Header | Empty |
+
+Keep Origin Server Name set to the root hostname even for tenant routes.
+
+3. Save the route.
+4. Under **your zone → DNS → Records**, check whether Cloudflare created the
+   tenant's record automatically. If it is missing, select **Add record**:
 
 ## Remove the local deployment
 
