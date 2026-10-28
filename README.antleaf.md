@@ -9,7 +9,18 @@ For Docker Desktop Kubernetes on macOS, see
 
 ### Production cluster
 
-### Create secret to hold Antleaf Robot Email Account for SMTP (uses Google application password)
+#### Create database if necessary
+```bash
+psql postgres
+create database hyrax with owner=hyrax;
+```
+
+#### Create namespace
+```bash
+kubectl create namespace hyku
+```
+
+#### Create secret to hold Antleaf Robot Email Account for SMTP (uses Google application password)
 
 ```bash
 kubectl create secret generic -n hyku hyku-secrets \
@@ -35,7 +46,7 @@ tag, set `DEPLOY_TAG`; `WORKER_TAG` defaults to the same value.
 
 ### If just deploying with existing images:
 ```bash
-export DEPLOY_TAG="v1.2.6" && \
+export DEPLOY_TAG="v1.2.7" && \
   export DEPLOY_IMAGE="antleaf/antleaf-hyku-web" && \
   export WORKER_IMAGE="antleaf/antleaf-hyku-worker" && \
   export HELM_EXTRA_ARGS="--values ops/deploy.yaml" && \
@@ -44,7 +55,7 @@ export DEPLOY_TAG="v1.2.6" && \
 
 ### Building with a new image tag:
 ```bash
-export DEPLOY_TAG="v1.2.6" && \
+export DEPLOY_TAG="v1.2.7" && \
   export DEPLOY_IMAGE="antleaf/antleaf-hyku-web" && \
   export WORKER_IMAGE="antleaf/antleaf-hyku-worker" && \
   docker buildx build -f Dockerfile --target hyku-web --platform linux/amd64,linux/arm64 --push -t $DEPLOY_IMAGE:$DEPLOY_TAG . && \

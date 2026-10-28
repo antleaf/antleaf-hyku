@@ -104,7 +104,8 @@ extraEnvVars: &envVars
   - name: PASSENGER_APP_ENV
     value: production
   - name: RAILS_CACHE_STORE_URL
-    value: redis://:redis-password@hyku-redis-master:6379/0
+    value: redis://valkey.default.svc.cluster.local:6379/3
+    # value: redis://:redis-password@hyku-redis-master:6379/0
   - name: RAILS_ENV
     value: production
   - name: RAILS_LOG_TO_STDOUT
@@ -114,9 +115,11 @@ extraEnvVars: &envVars
   - name: RAILS_SERVE_STATIC_FILES
     value: "true"
   - name: REDIS_HOST
-    value: hyku-redis-master
+    value: valkey.default.svc.cluster.local
+    # value: hyku-redis-master
   - name: REDIS_URL
-    value: redis://:redis-password@hyku-redis-master:6379/0
+    # value: redis://:redis-password@hyku-redis-master:6379/0
+    value: redis://valkey.default.svc.cluster.local:6379/3
   - name: HYRAX_ACTIVE_JOB_QUEUE
     value: good_job
   - name: HYKU_BULKRAX_ENABLED
@@ -237,18 +240,18 @@ postgresql:
   enabled: false
 
 redis:
-  enabled: true
-  architecture: standalone
-  auth:
-    password: redis-password
-  master:
-    resources:
-      limits:
-        memory: 256Mi
-        cpu: 100m
-      requests:
-        memory: 128Mi
-        cpu: 50m
+  enabled: false
+  # architecture: standalone
+  # auth:
+  #   password: redis-password
+  # master:
+  #   resources:
+  #     limits:
+  #       memory: 256Mi
+  #       cpu: 100m
+  #     requests:
+  #       memory: 128Mi
+  #       cpu: 50m
 
 solr:
   enabled: true
